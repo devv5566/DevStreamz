@@ -1037,6 +1037,7 @@ builder.defineStreamHandler(async (args) => {
 
     let combinedRawStreams = [];
     let providerDebugCounts = {};
+    let providerRawDebugCounts = {};
 
     // --- Provider Selection Logic ---
     const shouldFetch = (providerId) => {
@@ -1777,6 +1778,22 @@ builder.defineStreamHandler(async (args) => {
         }
 
         // Process results into streamsByProvider object
+        const rawStreamsByProvider = {
+            'ShowBox': shouldFetch('showbox') ? (providerResults[0] || []) : [],
+            'Soaper TV': ENABLE_SOAPERTV_PROVIDER && shouldFetch('soapertv') ? (providerResults[1] || []) : [],
+            'VidSrc': shouldFetch('vidsrc') ? (providerResults[2] || []) : [],
+            'VidZee': ENABLE_VIDZEE_PROVIDER && shouldFetch('vidzee') ? (providerResults[3] || []) : [],
+            'MP4Hydra': ENABLE_MP4HYDRA_PROVIDER && shouldFetch('mp4hydra') ? (providerResults[4] || []) : [],
+            'UHDMovies': ENABLE_UHDMOVIES_PROVIDER && shouldFetch('uhdmovies') ? (providerResults[5] || []) : [],
+            'MoviesMod': ENABLE_MOVIESMOD_PROVIDER && shouldFetch('moviesmod') ? (providerResults[6] || []) : [],
+            'TopMovies': ENABLE_TOPMOVIES_PROVIDER && shouldFetch('topmovies') ? (providerResults[7] || []) : [],
+            'MoviesDrive': ENABLE_MOVIESDRIVE_PROVIDER && shouldFetch('moviesdrive') ? (providerResults[8] || []) : [],
+            '4KHDHub': ENABLE_4KHDHUB_PROVIDER && shouldFetch('4khdhub') ? (providerResults[9] || []) : [],
+            'HDHub4u': ENABLE_HDHUB4U_PROVIDER && shouldFetch('hdhub4u') ? (providerResults[10] || []) : [],
+            'Vixsrc': ENABLE_VIXSRC_PROVIDER && shouldFetch('vixsrc') ? (providerResults[11] || []) : [],
+            'MovieBox': ENABLE_MOVIEBOX_PROVIDER && shouldFetch('moviebox') ? (providerResults[12] || []) : []
+        };
+
         const streamsByProvider = {
             'ShowBox': shouldFetch('showbox') ? applyAllStreamFilters(providerResults[0], 'ShowBox', minQualitiesPreferences.showbox, excludeCodecsPreferences.showbox) : [],
             'Soaper TV': ENABLE_SOAPERTV_PROVIDER && shouldFetch('soapertv') ? applyAllStreamFilters(providerResults[1], 'Soaper TV', minQualitiesPreferences.soapertv, excludeCodecsPreferences.soapertv) : [],
@@ -1796,6 +1813,9 @@ builder.defineStreamHandler(async (args) => {
         // Collect provider stream counts for Stremio-visible debugging.
         providerDebugCounts = Object.fromEntries(
             Object.entries(streamsByProvider).map(([provider, streams]) => [provider, Array.isArray(streams) ? streams.length : 0])
+        );
+        providerRawDebugCounts = Object.fromEntries(
+            Object.entries(rawStreamsByProvider).map(([provider, streams]) => [provider, Array.isArray(streams) ? streams.length : 0])
         );
 
         // Sort streams for each provider by quality, then size
@@ -2229,9 +2249,12 @@ Add "4khdhub" to your provider configuration`,
     const providerCountsLines = Object.entries(providerDebugCounts)
         .map(([provider, count]) => `${provider}: ${count}`)
         .join('\n');
+    const providerRawCountsLines = Object.entries(providerRawDebugCounts)
+        .map(([provider, count]) => `${provider}: ${count}`)
+        .join('\n');
     stremioStreamObjects.unshift({
         name: 'DEBUG Provider Matrix',
-        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\n\nCounts:\n${providerCountsLines || 'No provider counts available'}`,
+        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\nMin quality prefs: ${JSON.stringify(minQualitiesPreferences || {})}\n\nRaw counts (before filters):\n${providerRawCountsLines || 'No raw provider counts available'}\n\nFinal counts (after filters):\n${providerCountsLines || 'No provider counts available'}`,
         url: 'https://github.com/devv5566/DevStreamz',
         type: 'url',
         availability: 1,
