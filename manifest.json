@@ -1,0 +1,28 @@
+{
+  "id": "org.devstreamz.streams",
+  "version": "0.5.18",
+  "name": "DevStreamz Addon | Elfhosted",
+  "description": "Stremio addon for high-quality streaming links.",
+  "logo": "https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png",
+  "resources": [
+    "stream"
+  ],
+  "types": [
+    "movie",
+    "series"
+  ],
+  "idPrefixes": [
+    "tt",
+    "tmdb"
+  ],
+  "catalogs": [],
+  "behaviorHints": {
+    "adult": false,
+    "p2pNotSupported": true,
+    "configurable": true
+  },
+  "stremioAddonsConfig": {
+    "issuer": "https://stremio-addons.net",
+    "signature": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..2YiTzY5hiYNywrpyMgv9Vg.vtorJ0blJ2dja5h7HSdL2eg0Hho7g8nJJnX2HbjJXSqzOU64niitT3FQItz9Q0rtF2sIswFcm842XgAnih0vPCTksxPwlkfDqolZcCjirQMl5hhcSzxJo88Mvonq2dxG.OYTTCCQcFthlmdn6c117CQ"
+  }
+}
