@@ -2246,6 +2246,29 @@ Add "4khdhub" to your provider configuration`,
         .filter(([, enabled]) => enabled)
         .map(([provider]) => provider)
         .join(', ');
+    const providerNameToId = {
+        'ShowBox': 'showbox',
+        'Soaper TV': 'soapertv',
+        'VidSrc': 'vidsrc',
+        'VidZee': 'vidzee',
+        'MP4Hydra': 'mp4hydra',
+        'UHDMovies': 'uhdmovies',
+        'MoviesMod': 'moviesmod',
+        'TopMovies': 'topmovies',
+        'MoviesDrive': 'moviesdrive',
+        '4KHDHub': '4khdhub',
+        'HDHub4u': 'hdhub4u',
+        'Vixsrc': 'vixsrc',
+        'MovieBox': 'moviebox'
+    };
+    const providerSelectionLines = Object.entries(providerNameToId)
+        .map(([providerName, providerId]) => {
+            const envEnabled = !!enabledProviderFlags[providerId];
+            const selected = !selectedProvidersArray || selectedProvidersArray.includes(providerId);
+            const state = !envEnabled ? 'disabled_by_env' : (selected ? 'selected' : 'not_selected');
+            return `${providerName}: ${state}`;
+        })
+        .join('\n');
     const providerCountsLines = Object.entries(providerDebugCounts)
         .map(([provider, count]) => `${provider}: ${count}`)
         .join('\n');
@@ -2254,7 +2277,7 @@ Add "4khdhub" to your provider configuration`,
         .join('\n');
     stremioStreamObjects.unshift({
         name: 'DEBUG Provider Matrix',
-        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\nMin quality prefs: ${JSON.stringify(minQualitiesPreferences || {})}\n\nRaw counts (before filters):\n${providerRawCountsLines || 'No raw provider counts available'}\n\nFinal counts (after filters):\n${providerCountsLines || 'No provider counts available'}`,
+        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\nMin quality prefs: ${JSON.stringify(minQualitiesPreferences || {})}\n\nProvider state:\n${providerSelectionLines}\n\nRaw counts (before filters):\n${providerRawCountsLines || 'No raw provider counts available'}\n\nFinal counts (after filters):\n${providerCountsLines || 'No provider counts available'}`,
         url: 'https://github.com/devv5566/DevStreamz',
         type: 'url',
         availability: 1,
