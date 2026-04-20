@@ -3,7 +3,7 @@
   "version": "0.5.18",
   "name": "WatchFlix | DevStreamz",
   "description": "WatchFlix streaming addon powered by DevStreamz.",
-  "logo": "https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png",
+  "logo": "https://raw.githubusercontent.com/devstreamz/DevStreamz/main/assets/logo.png",
   "resources": [
     "stream"
   ],
