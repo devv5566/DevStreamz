@@ -1691,8 +1691,9 @@ builder.defineStreamHandler(async (args) => {
     console.log('Running parallel provider fetches with caching...');
 
     try {
-        // Execute all provider functions in parallel with 10-second timeout
-        const PROVIDER_TIMEOUT_MS = 45000; // 10 seconds
+        // Execute all provider functions in parallel with a global timeout
+        // Slower scrapers like MoviesMod/4KHDHub can legitimately take longer.
+        const PROVIDER_TIMEOUT_MS = 90000; // 90 seconds
         const providerPromises = [
             timeProvider('ShowBox', providerFetchFunctions.showbox()),
             timeProvider('Soaper TV', providerFetchFunctions.soapertv()),
@@ -1709,16 +1710,37 @@ builder.defineStreamHandler(async (args) => {
             timeProvider('MovieBox', providerFetchFunctions.moviebox())
         ];
 
-        // Implement proper timeout that returns results immediately after 10 seconds
+        // Implement timeout that still preserves already settled provider results
         let providerResults;
-        let timeoutOccurred = false;
 
         const timeoutPromise = new Promise((resolve) => {
             setTimeout(() => {
-                timeoutOccurred = true;
-                console.log(`[Timeout] 30-second timeout reached. Returning fetched links so far.`);
+                console.log(`[Timeout] ${PROVIDER_TIMEOUT_MS / 1000}-second timeout reached. Returning fetched links so far.`);
                 resolve('timeout');
             }, PROVIDER_TIMEOUT_MS);
+        });
+
+        // Track each provider promise so we can safely recover settled results on timeout.
+        const trackedProviders = providerPromises.map((providerPromise) => {
+            const state = {
+                settled: false,
+                fulfilled: false,
+                value: []
+            };
+
+            providerPromise
+                .then((value) => {
+                    state.settled = true;
+                    state.fulfilled = true;
+                    state.value = Array.isArray(value) ? value : [];
+                })
+                .catch(() => {
+                    state.settled = true;
+                    state.fulfilled = false;
+                    state.value = [];
+                });
+
+            return state;
         });
 
         // Start all providers and race against timeout
@@ -1732,16 +1754,11 @@ builder.defineStreamHandler(async (args) => {
             // Give a brief moment for any providers that might be just finishing
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            // Get current state of all promises
-            const currentResults = await Promise.allSettled(providerPromises.map(p =>
-                Promise.race([p, Promise.resolve([])])
-            ));
-
-            providerResults = currentResults.map((result, index) => {
+            providerResults = trackedProviders.map((providerState, index) => {
                 const providerNames = ['ShowBox', 'Soaper TV', 'VidSrc', 'VidZee', 'MP4Hydra', 'UHDMovies', 'MoviesMod', 'TopMovies', 'MoviesDrive', '4KHDHub', 'HDHub4u', 'Vixsrc', 'MovieBox'];
-                if (result.status === 'fulfilled' && Array.isArray(result.value) && result.value.length > 0) {
-                    console.log(`[Timeout] Provider ${providerNames[index]} completed with ${result.value.length} streams.`);
-                    return result.value;
+                if (providerState.settled && providerState.fulfilled && providerState.value.length > 0) {
+                    console.log(`[Timeout] Provider ${providerNames[index]} completed with ${providerState.value.length} streams.`);
+                    return providerState.value;
                 } else {
                     console.log(`[Timeout] Provider ${providerNames[index]} did not complete in time or returned no streams.`);
                     return []; // Return empty array for incomplete/failed providers
