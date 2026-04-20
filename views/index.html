@@ -283,6 +283,8 @@
                 <div class="providers">
                     <label><input id="providerShowbox" type="checkbox" checked> ShowBox</label>
                     <label><input id="provider4khdhub" type="checkbox" checked> 4KHDHub</label>
+                    <label><input id="providerVixsrc" type="checkbox" checked> VixSrc</label>
+                    <label><input id="providerVidzee" type="checkbox" checked> VidZee</label>
                 </div>
             </div>
 
@@ -304,6 +306,8 @@
         const regionSelect = document.getElementById('regionSelect');
         const providerShowbox = document.getElementById('providerShowbox');
         const provider4khdhub = document.getElementById('provider4khdhub');
+        const providerVixsrc = document.getElementById('providerVixsrc');
+        const providerVidzee = document.getElementById('providerVidzee');
         const manifestUrlEl = document.getElementById('manifestUrl');
         const installBtn = document.getElementById('installBtn');
         const copyBtn = document.getElementById('copyBtn');
@@ -313,6 +317,8 @@
             const providers = [];
             if (providerShowbox.checked) providers.push('showbox');
             if (provider4khdhub.checked) providers.push('4khdhub');
+            if (providerVixsrc.checked) providers.push('vixsrc');
+            if (providerVidzee.checked) providers.push('vidzee');
 
             const pathParts = [];
             const cookie = cookieInput.value.trim();
@@ -320,7 +326,7 @@
 
             if (cookie) pathParts.push(`cookie=${encodeURIComponent(cookie)}`);
             if (region) pathParts.push(`region=${encodeURIComponent(region)}`);
-            if (providers.length > 0 && providers.length < 2) {
+            if (providers.length > 0 && providers.length < 4) {
                 pathParts.push(`providers=${providers.join(',')}`);
             }
 
