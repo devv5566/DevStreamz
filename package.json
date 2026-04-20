@@ -1,7 +1,7 @@
 {
-  "name": "nuvio-streaming-addon",
+  "name": "watchflix-devstreamz-addon",
   "version": "0.5.14",
-  "description": "Stremio addon for HTTP streaming links",
+  "description": "WatchFlix streaming addon powered by DevStreamz",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

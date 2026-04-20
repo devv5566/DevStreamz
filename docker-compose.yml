@@ -1,8 +1,8 @@
 services:
-  nuvio-addon:
+  watchflix-addon:
     build: .
-    image: nuvio-streams-addon:latest
-    container_name: nuvio-streams-addon
+    image: watchflix-devstreamz-addon:latest
+    container_name: watchflix-devstreamz-addon
     ports:
       - "7000:7000"
     env_file:

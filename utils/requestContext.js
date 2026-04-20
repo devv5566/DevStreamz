@@ -63,7 +63,7 @@ function createRequestContextMiddleware() {
         // Run the rest of the request within this context
         requestContext.run({ config }, () => {
             // Store reference on req for easy access in middleware
-            req.nuvioConfig = config;
+            req.devstreamzConfig = config;
             next();
         });
     };

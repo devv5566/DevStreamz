@@ -206,7 +206,7 @@ app.use((req, res, next) => {
     // This ensures each request has its own isolated config that won't leak to other requests
     requestContext.run({ config: requestConfig }, () => {
         // Also set on req for direct access in middleware
-        req.nuvioConfig = requestConfig;
+        req.devstreamzConfig = requestConfig;
 
 
         global.currentRequestConfig = requestConfig;
@@ -706,7 +706,7 @@ app.get('/api/region-status', (req, res) => {
 const PORT = process.env.PORT || 7777;
 
 app.listen(PORT, () => {
-    console.log(`DevStreamz Addon landing page available at http://localhost:${PORT}`);
+    console.log(`WatchFlix by DevStreamz landing page available at http://localhost:${PORT}`);
     // console.log(`Cookie setup page available at http://localhost:${PORT}/setup`); // Removed
     const manifestUrl = `http://localhost:${PORT}/manifest.json`;
     console.log(`Default Addon Manifest available at: ${manifestUrl}`);

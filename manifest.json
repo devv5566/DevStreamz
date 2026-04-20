@@ -1,8 +1,8 @@
 {
-  "id": "org.devstreamz.streams",
+  "id": "org.devstreamz.watchflix",
   "version": "0.5.18",
-  "name": "DevStreamz Addon | Elfhosted",
-  "description": "Stremio addon for high-quality streaming links.",
+  "name": "WatchFlix | DevStreamz",
+  "description": "WatchFlix streaming addon powered by DevStreamz.",
   "logo": "https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png",
   "resources": [
     "stream"
