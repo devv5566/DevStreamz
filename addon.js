@@ -7,12 +7,17 @@ const {
     convertImdbToTmdb,
     sortStreamsByQuality
 } = require('./providers/Showbox.js');
-const { get4KHDHubStreams } = require('./providers/4khdhub.js');
+let get4KHDHubStreams = null;
+try {
+    ({ get4KHDHubStreams } = require('./providers/4khdhub.js'));
+} catch (_) {
+    get4KHDHubStreams = null;
+}
 
 const builder = new addonBuilder(manifest);
 
 const ENABLE_SHOWBOX_PROVIDER = process.env.ENABLE_SHOWBOX_PROVIDER !== 'false';
-const ENABLE_4KHDHUB_PROVIDER = process.env.ENABLE_4KHDHUB_PROVIDER !== 'false';
+const ENABLE_4KHDHUB_PROVIDER = process.env.ENABLE_4KHDHUB_PROVIDER !== 'false' && typeof get4KHDHubStreams === 'function';
 
 function getRequestConfig() {
     return (global.getRequestConfig ? global.getRequestConfig() : null) || global.currentRequestConfig || {};
@@ -46,7 +51,7 @@ function normalizeShowboxStreams(streams) {
         const detailLine = detailParts.join(' • ');
 
         return {
-            name: `ShowBox ${quality}`,
+            name: `⚡ ShowBox ${quality}`,
             title: `${titleLine}\n${detailLine}`,
             url: stream.url,
             quality: stream.quality,
