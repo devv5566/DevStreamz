@@ -1038,6 +1038,8 @@ builder.defineStreamHandler(async (args) => {
     let combinedRawStreams = [];
     let providerDebugCounts = {};
     let providerRawDebugCounts = {};
+    let providerCompletionDebug = {};
+    let providerTimeoutMs = 45000;
 
     // --- Provider Selection Logic ---
     const shouldFetch = (providerId) => {
@@ -1695,7 +1697,7 @@ builder.defineStreamHandler(async (args) => {
     try {
         // Execute all provider functions in parallel with a global timeout.
         // Keep this under typical Stremio request tolerance so partial results still return.
-        const PROVIDER_TIMEOUT_MS = 30000; // 30 seconds
+        providerTimeoutMs = parseInt(process.env.PROVIDER_TIMEOUT_MS || '45000', 10); // 45s default, configurable
         const providerPromises = [
             timeProvider('ShowBox', providerFetchFunctions.showbox()),
             timeProvider('Soaper TV', providerFetchFunctions.soapertv()),
@@ -1717,9 +1719,9 @@ builder.defineStreamHandler(async (args) => {
 
         const timeoutPromise = new Promise((resolve) => {
             setTimeout(() => {
-                console.log(`[Timeout] ${PROVIDER_TIMEOUT_MS / 1000}-second timeout reached. Returning fetched links so far.`);
+                console.log(`[Timeout] ${providerTimeoutMs / 1000}-second timeout reached. Returning fetched links so far.`);
                 resolve('timeout');
-            }, PROVIDER_TIMEOUT_MS);
+            }, providerTimeoutMs);
         });
 
         // Track each provider promise so we can safely recover settled results on timeout.
@@ -1766,6 +1768,18 @@ builder.defineStreamHandler(async (args) => {
                     return []; // Return empty array for incomplete/failed providers
                 }
             });
+
+            providerCompletionDebug = Object.fromEntries(
+                trackedProviders.map((providerState, index) => {
+                    const providerNames = ['ShowBox', 'Soaper TV', 'VidSrc', 'VidZee', 'MP4Hydra', 'UHDMovies', 'MoviesMod', 'TopMovies', 'MoviesDrive', '4KHDHub', 'HDHub4u', 'Vixsrc', 'MovieBox'];
+                    let status = 'unknown';
+                    if (!providerState.settled) status = 'timed_out';
+                    else if (!providerState.fulfilled) status = 'failed';
+                    else if ((providerState.value || []).length > 0) status = 'completed_with_results';
+                    else status = 'completed_empty';
+                    return [providerNames[index], status];
+                })
+            );
         } else {
             // All providers completed within timeout
             providerResults = raceResult.map(result => {
@@ -1775,6 +1789,14 @@ builder.defineStreamHandler(async (args) => {
                     return [];
                 }
             });
+
+            providerCompletionDebug = Object.fromEntries(
+                raceResult.map((result, index) => {
+                    const providerNames = ['ShowBox', 'Soaper TV', 'VidSrc', 'VidZee', 'MP4Hydra', 'UHDMovies', 'MoviesMod', 'TopMovies', 'MoviesDrive', '4KHDHub', 'HDHub4u', 'Vixsrc', 'MovieBox'];
+                    if (result.status !== 'fulfilled') return [providerNames[index], 'failed'];
+                    return [providerNames[index], (result.value || []).length > 0 ? 'completed_with_results' : 'completed_empty'];
+                })
+            );
         }
 
         // Process results into streamsByProvider object
@@ -2275,9 +2297,12 @@ Add "4khdhub" to your provider configuration`,
     const providerRawCountsLines = Object.entries(providerRawDebugCounts)
         .map(([provider, count]) => `${provider}: ${count}`)
         .join('\n');
+    const providerCompletionLines = Object.entries(providerCompletionDebug)
+        .map(([provider, status]) => `${provider}: ${status}`)
+        .join('\n');
     stremioStreamObjects.unshift({
         name: 'DEBUG Provider Matrix',
-        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\nMin quality prefs: ${JSON.stringify(minQualitiesPreferences || {})}\n\nProvider state:\n${providerSelectionLines}\n\nRaw counts (before filters):\n${providerRawCountsLines || 'No raw provider counts available'}\n\nFinal counts (after filters):\n${providerCountsLines || 'No provider counts available'}`,
+        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\nMin quality prefs: ${JSON.stringify(minQualitiesPreferences || {})}\nProvider timeout ms: ${providerTimeoutMs}\n\nProvider state:\n${providerSelectionLines}\n\nProvider completion:\n${providerCompletionLines || 'No provider completion details available'}\n\nRaw counts (before filters):\n${providerRawCountsLines || 'No raw provider counts available'}\n\nFinal counts (after filters):\n${providerCountsLines || 'No provider counts available'}`,
         url: 'https://github.com/devv5566/DevStreamz',
         type: 'url',
         availability: 1,
