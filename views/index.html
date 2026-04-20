@@ -3,106 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WatchFlix Setup</title>
+    <title>WatchFlix | DevStreamz</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png">
     <style>
+        :root {
+            --bg: #0b1220;
+            --card: rgba(18, 28, 47, 0.88);
+            --card-soft: rgba(20, 34, 56, 0.72);
+            --line: rgba(255, 255, 255, 0.14);
+            --text: #f5f7fb;
+            --muted: #9fb2cb;
+            --primary: #5b7cfa;
+            --primary-2: #7c4dff;
+            --ok: #12c48b;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            background: #111827;
-            color: #e5e7eb;
-        }
-        .wrap {
-            max-width: 760px;
-            margin: 40px auto;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(1200px 600px at -10% -10%, rgba(124, 77, 255, 0.22), transparent 55%),
+                radial-gradient(1000px 520px at 110% 0%, rgba(52, 211, 153, 0.18), transparent 50%),
+                linear-gradient(165deg, #070d18 0%, #0b1220 45%, #0a1324 100%);
+            display: grid;
+            place-items: center;
             padding: 24px;
-            background: #1f2937;
-            border-radius: 10px;
         }
-        h1 { margin-top: 0; }
+
+        .shell {
+            width: min(980px, 100%);
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 18px;
+        }
+
+        .hero,
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--card);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
+        }
+
+        .hero {
+            padding: 26px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 22px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            object-fit: cover;
+            background: #0a0f19;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.55rem;
+            letter-spacing: 0.2px;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            font-size: 0.83rem;
+            padding: 7px 11px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: var(--card-soft);
+            color: #d9e6f7;
+        }
+
+        .notice {
+            margin: 0;
+            color: #c4d4ea;
+            line-height: 1.5;
+            font-size: 0.94rem;
+        }
+
+        .status {
+            border: 1px dashed rgba(18, 196, 139, 0.45);
+            background: rgba(18, 196, 139, 0.08);
+            color: #d8fff3;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.88rem;
+        }
+
+        .panel {
+            padding: 20px;
+        }
+
         .row { margin-bottom: 14px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #e8f1fd;
+        }
+
         input[type="text"], select {
             width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #374151;
-            background: #111827;
-            color: #e5e7eb;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #0d182b;
+            color: var(--text);
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
         }
+
+        input[type="text"]:focus, select:focus {
+            border-color: rgba(91, 124, 250, 0.8);
+            box-shadow: 0 0 0 3px rgba(91, 124, 250, 0.2);
+        }
+
         .providers {
             display: flex;
-            gap: 18px;
-            margin-top: 8px;
+            gap: 14px;
         }
+
         .providers label {
+            margin: 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--card-soft);
             display: inline-flex;
             align-items: center;
             gap: 8px;
             font-weight: 500;
-        }
-        .btn {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 10px 14px;
-            border: 0;
-            border-radius: 6px;
-            background: #2563eb;
-            color: #fff;
-            text-decoration: none;
             cursor: pointer;
         }
-        .btn.secondary {
-            background: #374151;
-            margin-left: 8px;
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 6px;
         }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform .12s ease, opacity .12s ease;
+        }
+        .btn:hover { transform: translateY(-1px); opacity: 0.96; }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        }
+        .btn.dark {
+            background: #1e2b45;
+            border: 1px solid var(--line);
+        }
+        .btn.install {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #0f9f74, #12c48b);
+        }
+
         .output {
-            margin-top: 18px;
+            margin-top: 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
             padding: 12px;
-            background: #111827;
-            border: 1px solid #374151;
-            border-radius: 6px;
+            background: #0d182b;
+        }
+
+        .output strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+            color: #dce9fa;
+        }
+
+        #manifestUrl {
             word-break: break-all;
-            font-size: 14px;
+            color: #c7dbf7;
+            font-size: 0.84rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 880px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+            .actions {
+                grid-template-columns: 1fr;
+            }
+            .btn.install { grid-column: auto; }
         }
     </style>
 </head>
 <body>
-    <div class="wrap">
-        <h1>WatchFlix by DevStreamz</h1>
-        <p>This setup includes only ShowBox and 4KHDHub providers.</p>
+    <main class="shell">
+        <section class="hero">
+            <div>
+                <div class="brand">
+                    <img
+                        class="logo"
+                        src="https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png"
+                        alt="WatchFlix logo"
+                    >
+                    <div>
+                        <h1>WatchFlix</h1>
+                        <p>by DevStreamz</p>
+                    </div>
+                </div>
 
-        <div class="row">
-            <label for="cookieInput">FebBox Cookie (optional, for ShowBox)</label>
-            <input id="cookieInput" type="text" placeholder="ui=your_cookie_value">
-        </div>
-
-        <div class="row">
-            <label for="regionSelect">Region (ShowBox)</label>
-            <select id="regionSelect">
-                <option value="">Default</option>
-                <option value="USA7">USA7</option>
-                <option value="IN1">IN1</option>
-                <option value="SG1">SG1</option>
-            </select>
-        </div>
-
-        <div class="row">
-            <label>Providers</label>
-            <div class="providers">
-                <label><input id="providerShowbox" type="checkbox" checked> ShowBox</label>
-                <label><input id="provider4khdhub" type="checkbox" checked> 4KHDHub</label>
+                <div class="chip-row" style="margin-top:16px;">
+                    <span class="chip">ShowBox + 4KHDHub</span>
+                    <span class="chip">Stremio Ready</span>
+                    <span class="chip">No P2P</span>
+                </div>
             </div>
-        </div>
 
-        <button id="generateBtn" class="btn">Generate Install URL</button>
-        <button id="copyBtn" class="btn secondary">Copy Manifest URL</button>
-        <a id="installBtn" class="btn secondary" href="#">Install Addon</a>
+            <p class="notice">
+                Configure your providers, optional ShowBox cookie, and generate a personalized manifest link for Stremio.
+                This page only controls visual setup and install URL generation.
+            </p>
 
-        <div class="output">
-            <strong>Manifest URL:</strong>
-            <div id="manifestUrl"></div>
-        </div>
-    </div>
+            <div class="status">Branding active: WatchFlix / DevStreamz</div>
+        </section>
+
+        <section class="panel">
+            <div class="row">
+                <label for="cookieInput">ShowBox Cookie (optional)</label>
+                <input id="cookieInput" type="text" placeholder="ui=your_cookie_value">
+            </div>
+
+            <div class="row">
+                <label for="regionSelect">ShowBox Region</label>
+                <select id="regionSelect">
+                    <option value="">Default</option>
+                    <option value="USA7">USA7</option>
+                    <option value="IN1">IN1</option>
+                    <option value="SG1">SG1</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <label>Providers</label>
+                <div class="providers">
+                    <label><input id="providerShowbox" type="checkbox" checked> ShowBox</label>
+                    <label><input id="provider4khdhub" type="checkbox" checked> 4KHDHub</label>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="generateBtn" class="btn primary">Generate URL</button>
+                <button id="copyBtn" class="btn dark">Copy Manifest</button>
+                <a id="installBtn" class="btn install" href="#">Install in Stremio</a>
+            </div>
+
+            <div class="output">
+                <strong>Manifest URL</strong>
+                <div id="manifestUrl"></div>
+            </div>
+        </section>
+    </main>
 
     <script>
         const cookieInput = document.getElementById('cookieInput');
