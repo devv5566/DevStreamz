@@ -1799,6 +1799,44 @@ builder.defineStreamHandler(async (args) => {
             );
         }
 
+        // Recovery path: if all non-ShowBox providers are empty, force a fresh retry
+        // for key providers that are known to work but may fail transiently in hosted envs.
+        const nonShowboxRawCount = providerResults
+            .slice(1)
+            .reduce((sum, streams) => sum + (Array.isArray(streams) ? streams.length : 0), 0);
+
+        if (nonShowboxRawCount === 0) {
+            console.warn('[Recovery] All non-ShowBox providers returned empty. Triggering direct retry for 4KHDHub and MoviesMod.');
+
+            // providerResults indexes:
+            // 6 => MoviesMod, 9 => 4KHDHub
+            if (ENABLE_MOVIESMOD_PROVIDER && shouldFetch('moviesmod')) {
+                try {
+                    const retriedMoviesMod = await getMoviesModStreams(tmdbId, tmdbTypeFromId, seasonNum, episodeNum);
+                    if (Array.isArray(retriedMoviesMod) && retriedMoviesMod.length > 0) {
+                        providerResults[6] = retriedMoviesMod.map(stream => ({ ...stream, provider: 'MoviesMod' }));
+                        providerCompletionDebug['MoviesMod'] = 'recovered_with_results';
+                        console.log(`[Recovery] MoviesMod recovered with ${retriedMoviesMod.length} streams.`);
+                    }
+                } catch (err) {
+                    console.warn(`[Recovery] MoviesMod retry failed: ${err.message}`);
+                }
+            }
+
+            if (ENABLE_4KHDHUB_PROVIDER && shouldFetch('4khdhub')) {
+                try {
+                    const retried4KHDHub = await get4KHDHubStreams(tmdbId, tmdbTypeFromId, seasonNum, episodeNum);
+                    if (Array.isArray(retried4KHDHub) && retried4KHDHub.length > 0) {
+                        providerResults[9] = retried4KHDHub.map(stream => ({ ...stream, provider: '4KHDHub' }));
+                        providerCompletionDebug['4KHDHub'] = 'recovered_with_results';
+                        console.log(`[Recovery] 4KHDHub recovered with ${retried4KHDHub.length} streams.`);
+                    }
+                } catch (err) {
+                    console.warn(`[Recovery] 4KHDHub retry failed: ${err.message}`);
+                }
+            }
+        }
+
         // Process results into streamsByProvider object
         const rawStreamsByProvider = {
             'ShowBox': shouldFetch('showbox') ? (providerResults[0] || []) : [],

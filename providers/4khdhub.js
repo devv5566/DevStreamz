@@ -64,19 +64,26 @@ async function get4KHDHubDomain() {
 
 // Helper to fetch text content
 async function fetchText(url, options = {}) {
-    try {
-        const response = await axios.get(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                ...options.headers
-            },
-            timeout: 10000
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`[4KHDHub] Request failed for ${url}: ${error.message}`);
-        return null;
+    const maxAttempts = 2;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    ...options.headers
+                },
+                timeout: 20000
+            });
+            return response.data;
+        } catch (error) {
+            const isLastAttempt = attempt === maxAttempts;
+            console.error(`[4KHDHub] Request failed for ${url} (attempt ${attempt}/${maxAttempts}): ${error.message}`);
+            if (!isLastAttempt) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
     }
+    return null;
 }
 
 // Fetch TMDB Details
