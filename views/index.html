@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WatchFlix | DevStreamz</title>
-    <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%235b7cfa"/><stop offset="1" stop-color="%237c4dff"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="%230b1220"/><rect x="4" y="4" width="56" height="56" rx="12" fill="url(%23g)"/><path d="M17 21h7l8 23h-6l-1.4-4.6h-8.2L15 44H9l8-23zm3.2 6.3-2.5 7.8h5.1l-2.4-7.8h-.2z" fill="white"/><path d="M36 21h7v17h12v6H36V21z" fill="white"/></svg>'>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png">
     <style>
         :root {
             --bg: #0b1220;
@@ -238,7 +238,7 @@
                 <div class="brand">
                     <img
                         class="logo"
-                        src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%235b7cfa"/><stop offset="1" stop-color="%237c4dff"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="%230b1220"/><rect x="4" y="4" width="56" height="56" rx="12" fill="url(%23g)"/><path d="M17 21h7l8 23h-6l-1.4-4.6h-8.2L15 44H9l8-23zm3.2 6.3-2.5 7.8h5.1l-2.4-7.8h-.2z" fill="white"/><path d="M36 21h7v17h12v6H36V21z" fill="white"/></svg>'
+                        src="https://raw.githubusercontent.com/devstreamz/DevStreamz/refs/heads/main/assets/logo.png"
                         alt="WatchFlix logo"
                     >
                     <div>
@@ -248,7 +248,7 @@
                 </div>
 
                 <div class="chip-row" style="margin-top:16px;">
-                    <span class="chip">ShowBox</span>
+                    <span class="chip">ShowBox + 4KHDHub</span>
                     <span class="chip">Stremio Ready</span>
                     <span class="chip">No P2P</span>
                 </div>
@@ -279,9 +279,10 @@
             </div>
 
             <div class="row">
-                <label>Provider</label>
+                <label>Providers</label>
                 <div class="providers">
                     <label><input id="providerShowbox" type="checkbox" checked> ShowBox</label>
+                    <label><input id="provider4khdhub" type="checkbox" checked> 4KHDHub</label>
                 </div>
             </div>
 
@@ -302,6 +303,7 @@
         const cookieInput = document.getElementById('cookieInput');
         const regionSelect = document.getElementById('regionSelect');
         const providerShowbox = document.getElementById('providerShowbox');
+        const provider4khdhub = document.getElementById('provider4khdhub');
         const manifestUrlEl = document.getElementById('manifestUrl');
         const installBtn = document.getElementById('installBtn');
         const copyBtn = document.getElementById('copyBtn');
@@ -310,6 +312,7 @@
         function buildManifestUrl() {
             const providers = [];
             if (providerShowbox.checked) providers.push('showbox');
+            if (provider4khdhub.checked) providers.push('4khdhub');
 
             const pathParts = [];
             const cookie = cookieInput.value.trim();
@@ -317,7 +320,9 @@
 
             if (cookie) pathParts.push(`cookie=${encodeURIComponent(cookie)}`);
             if (region) pathParts.push(`region=${encodeURIComponent(region)}`);
-            // Only showbox remains; no provider param needed.
+            if (providers.length > 0 && providers.length < 2) {
+                pathParts.push(`providers=${providers.join(',')}`);
+            }
 
             const pathPrefix = pathParts.length > 0 ? `/${pathParts.join('/')}` : '';
             return `${window.location.origin}${pathPrefix}/manifest.json`;

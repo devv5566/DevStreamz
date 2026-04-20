@@ -7,10 +7,12 @@ const {
     convertImdbToTmdb,
     sortStreamsByQuality
 } = require('./providers/Showbox.js');
+const { get4KHDHubStreams } = require('./providers/4khdhub.js');
 
 const builder = new addonBuilder(manifest);
 
 const ENABLE_SHOWBOX_PROVIDER = process.env.ENABLE_SHOWBOX_PROVIDER !== 'false';
+const ENABLE_4KHDHUB_PROVIDER = process.env.ENABLE_4KHDHUB_PROVIDER !== 'false';
 
 function getRequestConfig() {
     return (global.getRequestConfig ? global.getRequestConfig() : null) || global.currentRequestConfig || {};
@@ -52,6 +54,17 @@ function normalizeShowboxStreams(streams) {
             behaviorHints: stream.behaviorHints || { notWebReady: true }
         };
     });
+}
+
+function normalize4khdhubStreams(streams) {
+    return (streams || []).map((stream) => ({
+        name: stream.name || '4KHDHub',
+        title: stream.title || '4KHDHub Stream',
+        url: stream.url,
+        quality: stream.quality,
+        size: stream.size,
+        behaviorHints: stream.behaviorHints || { notWebReady: true }
+    }));
 }
 
 function toStremioStream(stream) {
@@ -135,6 +148,16 @@ builder.defineStreamHandler(async (args) => {
             streamBuckets.push(...normalized);
         } catch (error) {
             console.warn(`[ShowBox] Failed to fetch streams: ${error.message}`);
+        }
+    }
+
+    if (ENABLE_4KHDHUB_PROVIDER && shouldFetchProvider(selectedProviders, '4khdhub')) {
+        try {
+            const hubStreams = await get4KHDHubStreams(tmdbId, tmdbType, seasonNum, episodeNum);
+            const normalized = normalize4khdhubStreams(hubStreams);
+            streamBuckets.push(...normalized);
+        } catch (error) {
+            console.warn(`[4KHDHub] Failed to fetch streams: ${error.message}`);
         }
     }
 
