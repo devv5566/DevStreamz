@@ -1036,6 +1036,7 @@ builder.defineStreamHandler(async (args) => {
     }
 
     let combinedRawStreams = [];
+    let providerDebugCounts = {};
 
     // --- Provider Selection Logic ---
     const shouldFetch = (providerId) => {
@@ -1792,6 +1793,11 @@ builder.defineStreamHandler(async (args) => {
             'MovieBox': ENABLE_MOVIEBOX_PROVIDER && shouldFetch('moviebox') ? applyAllStreamFilters(providerResults[12], 'MovieBox', minQualitiesPreferences.moviebox, excludeCodecsPreferences.moviebox) : []
         };
 
+        // Collect provider stream counts for Stremio-visible debugging.
+        providerDebugCounts = Object.fromEntries(
+            Object.entries(streamsByProvider).map(([provider, streams]) => [provider, Array.isArray(streams) ? streams.length : 0])
+        );
+
         // Sort streams for each provider by quality, then size
         console.log('Sorting streams for each provider by quality, then size...');
         for (const provider in streamsByProvider) {
@@ -2198,6 +2204,39 @@ Add "4khdhub" to your provider configuration`,
 
         stremioStreamObjects.push(infoStream);
     }
+
+    // Temporary debug stream to verify provider selection/counts in Stremio client.
+    const enabledProviderFlags = {
+        showbox: true,
+        soapertv: ENABLE_SOAPERTV_PROVIDER,
+        vidsrc: true,
+        vidzee: ENABLE_VIDZEE_PROVIDER,
+        mp4hydra: ENABLE_MP4HYDRA_PROVIDER,
+        uhdmovies: ENABLE_UHDMOVIES_PROVIDER,
+        moviesmod: ENABLE_MOVIESMOD_PROVIDER,
+        topmovies: ENABLE_TOPMOVIES_PROVIDER,
+        moviesdrive: ENABLE_MOVIESDRIVE_PROVIDER,
+        '4khdhub': ENABLE_4KHDHUB_PROVIDER,
+        hdhub4u: ENABLE_HDHUB4U_PROVIDER,
+        vixsrc: ENABLE_VIXSRC_PROVIDER,
+        moviebox: ENABLE_MOVIEBOX_PROVIDER
+    };
+    const selectedProvidersText = selectedProvidersArray ? selectedProvidersArray.join(', ') : 'all';
+    const enabledProvidersText = Object.entries(enabledProviderFlags)
+        .filter(([, enabled]) => enabled)
+        .map(([provider]) => provider)
+        .join(', ');
+    const providerCountsLines = Object.entries(providerDebugCounts)
+        .map(([provider, count]) => `${provider}: ${count}`)
+        .join('\n');
+    stremioStreamObjects.unshift({
+        name: 'DEBUG Provider Matrix',
+        title: `Selected providers: ${selectedProvidersText}\nEnabled by env: ${enabledProvidersText}\n\nCounts:\n${providerCountsLines || 'No provider counts available'}`,
+        url: 'https://github.com/devv5566/DevStreamz',
+        type: 'url',
+        availability: 1,
+        behaviorHints: { notWebReady: false }
+    });
 
     return {
         streams: stremioStreamObjects
