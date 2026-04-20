@@ -1691,9 +1691,9 @@ builder.defineStreamHandler(async (args) => {
     console.log('Running parallel provider fetches with caching...');
 
     try {
-        // Execute all provider functions in parallel with a global timeout
-        // Slower scrapers like MoviesMod/4KHDHub can legitimately take longer.
-        const PROVIDER_TIMEOUT_MS = 90000; // 90 seconds
+        // Execute all provider functions in parallel with a global timeout.
+        // Keep this under typical Stremio request tolerance so partial results still return.
+        const PROVIDER_TIMEOUT_MS = 30000; // 30 seconds
         const providerPromises = [
             timeProvider('ShowBox', providerFetchFunctions.showbox()),
             timeProvider('Soaper TV', providerFetchFunctions.soapertv()),

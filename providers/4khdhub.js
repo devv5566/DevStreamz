@@ -129,37 +129,61 @@ async function fetchPageUrl(name, year, isSeries) {
     const $ = cheerio.load(html);
     const targetType = isSeries ? 'Series' : 'Movies';
 
-    // Find cards that contain the correct type
-    const matchingCards = $('.movie-card')
-        .filter((_i, el) => {
-            const hasFormat = $(el).find(`.movie-card-format:contains("${targetType}")`).length > 0;
-            return hasFormat;
-        })
-        .filter((_i, el) => {
-            const metaText = $(el).find('.movie-card-meta').text();
-            const movieCardYear = parseInt(metaText);
-            return !isNaN(movieCardYear) && Math.abs(movieCardYear - year) <= 1;
-        })
-        .filter((_i, el) => {
-            const movieCardTitle = $(el).find('.movie-card-title')
-                .text()
-                .replace(/\[.*?]/g, '')
-                .trim();
+    const normalizeTitle = (value) => String(value || '')
+        .toLowerCase()
+        .replace(/\[.*?\]/g, ' ')
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const targetTitleNorm = normalizeTitle(name);
 
-            // Allow exact match or close Levenshtein distance
-            // Also user's code used: useCollator: true, but fast-levenshtein is simpler
-            return levenshtein.get(movieCardTitle.toLowerCase(), name.toLowerCase()) < 5;
-        })
+    // Rank cards instead of hard filtering to avoid missing valid entries when site labels vary.
+    const scoredCards = $('.movie-card')
         .map((_i, el) => {
-            let href = $(el).attr('href');
+            const formatText = $(el).find('.movie-card-format').text().trim().toLowerCase();
+            const metaText = $(el).find('.movie-card-meta').text().trim();
+            const movieCardYear = parseInt(metaText, 10);
+            const movieCardTitle = $(el).find('.movie-card-title').text().trim();
+            const cardTitleNorm = normalizeTitle(movieCardTitle);
+
+            // New markup may keep the URL on the card anchor, not always on .movie-card itself.
+            let href = $(el).attr('href') || $(el).find('a').first().attr('href');
             if (href && !href.startsWith('http')) {
                 href = baseUrl + (href.startsWith('/') ? '' : '/') + href;
             }
-            return href;
-        })
-        .get();
 
-    const result = matchingCards.length > 0 ? matchingCards[0] : null;
+            // Skip unusable cards early.
+            if (!href || !cardTitleNorm) return null;
+
+            let score = 0;
+            if (isSeries) {
+                if (formatText.includes('series')) score += 3;
+            } else {
+                if (formatText.includes('movie')) score += 3;
+            }
+
+            if (!isNaN(movieCardYear) && year) {
+                const yearDiff = Math.abs(movieCardYear - year);
+                if (yearDiff === 0) score += 4;
+                else if (yearDiff === 1) score += 2;
+                else if (yearDiff >= 2) score -= 2;
+            }
+
+            // Blend strict fuzzy distance with practical title containment.
+            const distance = levenshtein.get(cardTitleNorm, targetTitleNorm);
+            const maxLen = Math.max(cardTitleNorm.length, targetTitleNorm.length) || 1;
+            const similarity = 1 - (distance / maxLen);
+            if (similarity >= 0.85) score += 6;
+            else if (similarity >= 0.7) score += 3;
+            else if (cardTitleNorm.includes(targetTitleNorm) || targetTitleNorm.includes(cardTitleNorm)) score += 2;
+
+            return { href, score, title: movieCardTitle, year: movieCardYear, formatText };
+        })
+        .get()
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score);
+
+    const result = scoredCards.length > 0 ? scoredCards[0].href : null;
     if (CACHE_ENABLED && result) {
         await redisCache.saveToCache(cacheKey, { data: result }, '', CACHE_DIR, 86400); // 1 day TTL
     }
