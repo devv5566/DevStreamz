@@ -116,6 +116,27 @@
             font-size: 0.88rem;
         }
 
+        .more-addons {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            text-decoration: none;
+            border: 1px solid rgba(91, 124, 250, 0.25);
+            border-radius: 999px;
+            padding: 5px 12px;
+            background: rgba(91, 124, 250, 0.07);
+            transition: color .15s ease, border-color .15s ease, background .15s ease;
+            width: fit-content;
+        }
+        .more-addons:hover {
+            color: #a5bfff;
+            border-color: rgba(91, 124, 250, 0.55);
+            background: rgba(91, 124, 250, 0.14);
+        }
+        .more-addons svg { flex-shrink: 0; }
+
         .panel {
             padding: 20px;
         }
@@ -260,6 +281,11 @@
             </p>
 
             <div class="status">Branding active: WatchFlix / DevStreamz</div>
+
+            <a class="more-addons" href="https://sword-watch.vercel.app/configure" target="_blank" rel="noopener noreferrer">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                More addons by DevStreamz &rarr;
+            </a>
         </section>
 
         <section class="panel">
