@@ -357,10 +357,9 @@
             </div>
 
             <div class="actions">
-                <button id="generateBtn" class="btn primary">Generate URL</button>
+                <button id="generateBtn" class="btn primary">Validate Cookie</button>
                 <button id="copyBtn" class="btn dark">Copy Manifest</button>
                 <a id="installBtn" class="btn install" href="#">Install in Stremio</a>
-                <button id="validateBtn" class="btn validate">Validate Cookie</button>
             </div>
             <div id="validateResult"></div>
 
@@ -407,27 +406,18 @@
             installBtn.href = installUrl;
         }
 
-        generateBtn.addEventListener('click', refreshUrls);
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(manifestUrlEl.textContent);
-            } catch (e) {
-                console.error('Copy failed', e);
-            }
-        });
-
-        const validateBtn = document.getElementById('validateBtn');
         const validateResult = document.getElementById('validateResult');
 
-        validateBtn.addEventListener('click', async () => {
+        generateBtn.addEventListener('click', async () => {
+            refreshUrls();
             const cookie = cookieInput.value.trim();
             if (!cookie) {
-                validateResult.className = 'fail';
-                validateResult.innerHTML = '&#9888; Please enter a cookie first.';
+                validateResult.className = '';
+                validateResult.style.display = 'none';
                 return;
             }
-            validateBtn.disabled = true;
-            validateBtn.innerHTML = '<span class="spin"></span> Validating…';
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spin"></span> Validating…';
             validateResult.className = '';
             validateResult.style.display = 'none';
             try {
@@ -448,8 +438,16 @@
                 validateResult.className = 'fail';
                 validateResult.innerHTML = '&#10007; Network error: ' + e.message;
             } finally {
-                validateBtn.disabled = false;
-                validateBtn.innerHTML = 'Validate Cookie';
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Validate Cookie';
+            }
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(manifestUrlEl.textContent);
+            } catch (e) {
+                console.error('Copy failed', e);
             }
         });
 
